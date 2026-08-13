@@ -112,7 +112,7 @@ public class BoxService {
     public BatteryResponse getBatteryLevel(UUID boxId) {
 
         Box box = boxRepository.findById(boxId)
-                .orElseThrow(() -> new IllegalArgumentException("Box not found"));
+                .orElseThrow(() -> new BoxNotFoundException("Box not found"));
 
         return new BatteryResponse(
                 box.getId(),
