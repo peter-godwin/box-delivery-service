@@ -4,6 +4,8 @@ import com.petergodwin.box_delivery_service.dto.*;
 import com.petergodwin.box_delivery_service.entity.Box;
 import com.petergodwin.box_delivery_service.entity.BoxState;
 import com.petergodwin.box_delivery_service.entity.Item;
+import com.petergodwin.box_delivery_service.exception.BoxLoadingException;
+import com.petergodwin.box_delivery_service.exception.BoxNotFoundException;
 import com.petergodwin.box_delivery_service.repository.BoxRepository;
 import com.petergodwin.box_delivery_service.repository.ItemRepository;
 import jakarta.transaction.Transactional;
@@ -25,7 +27,7 @@ public class BoxService {
     public BoxResponse createBox(CreateBoxRequest request) {
 
         if (boxRepository.existsByTxref(request.txref())) {
-            throw new IllegalArgumentException("A box with this txref already exists");
+            throw new BoxLoadingException("A box with this txref already exists");
         }
 
         Box box = new Box();
@@ -43,7 +45,7 @@ public class BoxService {
     public List<ItemResponse> loadBox(UUID boxId, LoadItemsRequest request) {
 
         Box box = boxRepository.findById(boxId)
-                .orElseThrow(() -> new IllegalArgumentException("Box not found"));
+                .orElseThrow(() -> new BoxNotFoundException ("Box not found"));
 
         validateBoxCanBeLoaded(box);
 
@@ -53,7 +55,7 @@ public class BoxService {
                 .sum();
 
         if (totalWeight > box.getWeightLimit()) {
-            throw new IllegalArgumentException(
+            throw new BoxLoadingException(
                     "Total item weight exceeds the box weight limit"
             );
         }
@@ -86,7 +88,7 @@ public class BoxService {
     public List<ItemResponse> getBoxItems(UUID boxId) {
 
         if (!boxRepository.existsById(boxId)) {
-            throw new IllegalArgumentException("Box not found");
+            throw new BoxNotFoundException("Box not found");
         }
 
         return itemRepository.findByBoxId(boxId)
@@ -121,13 +123,13 @@ public class BoxService {
     private void validateBoxCanBeLoaded(Box box) {
 
         if (box.getBatteryLevel() < MINIMUM_LOADING_BATTERY) {
-            throw new IllegalStateException(
+            throw new BoxLoadingException(
                     "Box battery level must be at least 25% to load"
             );
         }
 
         if (box.getState() != BoxState.IDLE) {
-            throw new IllegalStateException(
+            throw new BoxLoadingException(
                     "Box must be in IDLE state to be loaded"
             );
         }
