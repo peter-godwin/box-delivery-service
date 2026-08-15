@@ -28,7 +28,7 @@ The API is exposed under `/api/v1` so future breaking changes don't affect exist
 ## Running the Application
 
 Clone the repository and run:
-git clone https://github.com/<your-username>/box-delivery-service.git
+`git clone https://github.com/<your-username>/box-delivery-service.git`
 
 cd box-delivery-service
 
